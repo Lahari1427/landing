@@ -1,0 +1,7 @@
+streamlit
+groq
+pillow
+deep-translator
+matplotlib
+requests
+
