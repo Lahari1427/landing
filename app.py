@@ -324,38 +324,50 @@ def translate_text(client: Groq, text: str, target_language: str) -> str:
         return f"Translation error: {str(e)}"
 
 # Image Analysis Function
+# Image Analysis Function
 def analyze_image(client: Groq, image_data: str, analysis_type: str) -> str:
     """Analyze image using Groq Vision capabilities"""
     try:
+        # Select prompt based on analysis type
         if analysis_type == "Food Recognition":
-            prompt = """Analyze this food image and provide:
+            prompt_text = """Analyze this food image and provide:
             1. Food items identified
             2. Estimated calories
             3. Macronutrient breakdown (protein, carbs, fats)
             4. Nutritional assessment
             5. Healthier alternatives if applicable"""
-        
         elif analysis_type == "Workout Form":
-            prompt = """Analyze this workout/exercise image and provide:
+            prompt_text = """Analyze this workout/exercise image and provide:
             1. Exercise identified
             2. Form assessment
             3. Common mistakes to avoid
             4. Suggestions for improvement
             5. Safety tips"""
-        
         else:  # General Health
-            prompt = """Analyze this health-related image and provide relevant insights."""
+            prompt_text = """Analyze this health-related image and provide relevant insights."""
         
-        # Note: Groq's llama-3.3-70b-versatile doesn't support vision
-        # This is a placeholder for when vision models are available
-        return """Image analysis feature requires a vision-capable model. 
-        Currently, llama-3.3-70b-versatile doesn't support image inputs.
+        # Call Groq API with Vision Model
+        response = client.chat.completions.create(
+            model="meta-llama/llama-4-scout-17b-16e-instruct",
+            messages=[
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "text", "text": prompt_text},
+                        {
+                            "type": "image_url",
+                            "image_url": {
+                                "url": f"data:image/jpeg;base64,{image_data}"
+                            }
+                        }
+                    ]
+                }
+            ],
+            temperature=0.7,
+            max_tokens=1024
+        )
         
-        To analyze images, you would need to:
-        1. Use a vision-capable model like GPT-4 Vision or similar
-        2. Or describe the image content, and I can provide guidance based on your description.
-        
-        Please describe what you see in the image, and I'll help you with the analysis!"""
+        return response.choices[0].message.content
     
     except Exception as e:
         return f"Image analysis error: {str(e)}"
